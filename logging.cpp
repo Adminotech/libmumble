@@ -8,7 +8,12 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+#if defined(_WIN32)
+    #include <io.h>
+#else
+    #include <unistd.h>
+#endif
+
 
 #include <ctime>
 #include <iomanip>
