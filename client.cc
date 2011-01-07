@@ -215,6 +215,9 @@ void MumbleClient::HandleUserState(const MumbleProto::UserState& us) {
 		if (us.has_hash())
 			nu->hash = us.hash();
 
+    	if (us.has_comment())
+		    nu->comment = us.comment();
+
 		DLOG(INFO) << "New user " << nu->name;
 		user_list_.push_back(nu);
 
