@@ -1,4 +1,4 @@
-#include "celt.h"
+#include "celt/celt.h"
 #ifdef WITH_MPG123
 #include <mpg123.h>
 #endif

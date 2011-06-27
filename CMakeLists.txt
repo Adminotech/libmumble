@@ -55,7 +55,7 @@ SET(HEADERS channel.h client.h client_lib.h CryptState.h logging.h messages.h se
 add_library(mumbleclient ${SOURCES} ${HEADERS} ${PROTO_SRCS} ${PROTO_HDRS})
 target_link_libraries(mumbleclient ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} ${PROTOBUF_LIBRARY})
 
-option(WITH_MPG123 "Add mp3 playback support" ON)
+option(WITH_MPG123 "Add mp3 playback support" OFF)
 
 if (WITH_MPG123)
 	add_definitions(-DWITH_MPG123)
