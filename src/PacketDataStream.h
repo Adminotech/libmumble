@@ -277,12 +277,12 @@ class PacketDataStream {
 		}
 
 		PacketDataStream &operator <<(const bool b) {
-			uint32_t v = b ? 1 : 0;
+			unsigned int v = b ? 1 : 0;
 			return *this << v;
 		}
 
 		PacketDataStream &operator >>(bool &b) {
-			uint32_t v;
+			unsigned int v;
 			*this >> v;
 			b = v ? true : false;
 			return *this;
