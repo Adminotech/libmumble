@@ -26,7 +26,7 @@ if (WIN32)
     # You can add paths here if the below are not maching to your setup.
     set (CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${OPENSSL_ROOT}/include ${PROTOBUF_ROOT}/include ${PROTOBUF_ROOT}/vsprojects/include ${PROTOBUF_ROOT}/src)
     set (CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${OPENSSL_ROOT}/lib ${PROTOBUF_ROOT}/lib ${PROTOBUF_ROOT}/vsprojects/lib ${PROTOBUF_ROOT}/vsprojects/Release)
-    set (CMAKE_PROGRAM_PATH ${CMAKE_PROGRAM_PATH} ${PROTOBUF_ROOT}/bin ${PROTOBUF_ROOT}/vsprojects/bin ${PROTOBUF_ROOT}/vsprojects/Release)
+    set (CMAKE_PROGRAM_PATH ${CMAKE_PROGRAM_PATH} ${PROTOBUF_ROOT}/bin ${PROTOBUF_ROOT}/lib ${PROTOBUF_ROOT}/vsprojects/bin ${PROTOBUF_ROOT}/vsprojects/Release)
 endif ()
 
 # Boost

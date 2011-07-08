@@ -1,2 +1,2 @@
-cmake -G "Visual Studio 2010" .
+cmake -G "Visual Studio 10" .
 pause
