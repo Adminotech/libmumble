@@ -1,10 +1,10 @@
+
 #if defined(_WIN32)
 #include <windows.h>
 #endif
 #if defined(__linux)
 #include <syscall.h>
 #endif
-#include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>

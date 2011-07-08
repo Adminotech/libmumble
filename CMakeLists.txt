@@ -6,9 +6,9 @@ project (libmumbleclient)
 set (libmumbleclient_VERSION_MAJOR 0)
 set (libmumbleclient_VERSION_MINOR 1)
 
-set (CMAKE_BUILD_TYPE Debug)
-set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY lib)
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY lib)
+set (CMAKE_BUILD_TYPE Release Debug)
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY src)
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY src)
 
 # Set this ON if you want to build a test executable.
 # For the pure library this is not needed.
@@ -125,8 +125,14 @@ set (LIBMUMBLE_HEADERS
 # Dependency includes
 include_directories(. ${Boost_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR} ${CELT_INCLUDE_DIR} ${PROTOBUF_INCLUDE_DIR})
 
+# Build type on windows static, shared on linux
+set (LIBMUMBLE_BUILD_TYPE SHARED)
+if (WIN32)
+    set (LIBMUMBLE_BUILD_TYPE STATIC)
+endif ()
+
 # Add mumbleclient project
-add_library(mumbleclient SHARED ${LIBMUMBLE_SOURCES} ${LIBMUMBLE_HEADERS} ${PROTO_SRCS} ${PROTO_HDRS})
+add_library(mumbleclient ${LIBMUMBLE_BUILD_TYPE} ${LIBMUMBLE_SOURCES} ${LIBMUMBLE_HEADERS} ${PROTO_SRCS} ${PROTO_HDRS})
 target_link_libraries(mumbleclient ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} ${PROTOBUF_LIBRARY})
 set_target_properties (mumbleclient PROPERTIES DEBUG_POSTFIX d)
 set_target_properties (mumbleclient PROPERTIES PREFIX "")

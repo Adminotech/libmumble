@@ -1,14 +1,15 @@
 #ifndef CLIENT_H_
 #define CLIENT_H_
 
-#include <stdint.h>
 #include <list>
+#include <deque>
 
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include "libmumble_stdint.h"
 #include "messages.h"
 #include "Mumble.pb.h"
 #include "visibility.h"

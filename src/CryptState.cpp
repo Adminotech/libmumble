@@ -38,9 +38,9 @@
  */
 
 #include "CryptState.h"
+#include "libmumble_stdint.h"
 
 #include <openssl/rand.h>
-#include <stdint.h>
 #include <string.h>
 #include <cstdio>
 

@@ -1,8 +1,7 @@
 #ifndef LOGGING_H_
 #define LOGGING_H_
 
-#include <stdint.h>
-
+#include "libmumble_stdint.h"
 #include <sstream>
 
 namespace MumbleClient {

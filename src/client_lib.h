@@ -1,11 +1,10 @@
 #ifndef CLIENT_LIB_H_
 #define CLIENT_LIB_H_
 
-#include <stdint.h>
+#include "visibility.h"
+#include "libmumble_stdint.h"
 
 #include <boost/asio.hpp>
-
-#include "visibility.h"
 
 namespace MumbleClient {
 
