@@ -17,10 +17,16 @@ set (BUILD_TESTS OFF)
 # Set the following for windows to help cmake out a bit
 # This is bad cmake but will have to do, remember forward slashes as separators /
 if (WIN32)
+    # Set depedency root directories
     set (Boost_USE_STATIC_LIBS ON)
     set (BOOST_ROOT C:/path/Boost)
     set (OPENSSL_ROOT C:/path/OpenSSL)
-    set (PROTOBUF_ROOT C:/path/protobuf)
+    set (PROTOBUF_ROOT C:/path/Protobuf)
+    # Give cmake some hints where to look for libs/includes/executables in Find*.cmake helpers.
+    # You can add paths here if the below are not maching to your setup.
+    set (CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} ${OPENSSL_ROOT}/include ${PROTOBUF_ROOT}/include ${PROTOBUF_ROOT}/vsprojects/include ${PROTOBUF_ROOT}/src)
+    set (CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ${OPENSSL_ROOT}/lib ${PROTOBUF_ROOT}/lib ${PROTOBUF_ROOT}/vsprojects/lib ${PROTOBUF_ROOT}/vsprojects/Release)
+    set (CMAKE_PROGRAM_PATH ${CMAKE_PROGRAM_PATH} ${PROTOBUF_ROOT}/bin ${PROTOBUF_ROOT}/vsprojects/bin ${PROTOBUF_ROOT}/vsprojects/Release)
 endif ()
 
 # Boost
@@ -30,16 +36,20 @@ message (STATUS "Boost found: " ${Boost_FOUND})
 message (STATUS "Include dirs")
 message (STATUS "-- " ${Boost_INCLUDE_DIRS})
 message (STATUS "Libraries")
-message (STATUS "-- " ${Boost_LIBRARIES})
+foreach (Boost_lib ${Boost_LIBRARIES})
+    message (STATUS "-- " ${Boost_lib})
+endforeach ()
 message (STATUS "-- ")
 
 # OpenSSL
 find_package (OpenSSL REQUIRED)
 message (STATUS "OpenSSL found: " ${OPENSSL_FOUND})
 message (STATUS "Include dirs")
-message (STATUS "-- " ${OPENSSL_INCLUDE_DIRS})
+message (STATUS "-- " ${OPENSSL_INCLUDE_DIR})
 message (STATUS "Libraries")
-message (STATUS "-- " ${OPENSSL_LIBRARIES})
+foreach (OpenSSL_lib ${OPENSSL_LIBRARIES})
+    message (STATUS "-- " ${OpenSSL_lib})
+endforeach ()
 message (STATUS "-- ")
 
 # Protobuf
