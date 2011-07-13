@@ -134,8 +134,10 @@ endif ()
 # Add mumbleclient project
 add_library(mumbleclient ${LIBMUMBLE_BUILD_TYPE} ${LIBMUMBLE_SOURCES} ${LIBMUMBLE_HEADERS} ${PROTO_SRCS} ${PROTO_HDRS})
 target_link_libraries(mumbleclient ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES} ${PROTOBUF_LIBRARY})
-set_target_properties (mumbleclient PROPERTIES DEBUG_POSTFIX d)
-set_target_properties (mumbleclient PROPERTIES PREFIX "")
+if(WIN32)
+    set_target_properties (mumbleclient PROPERTIES DEBUG_POSTFIX d)
+    set_target_properties (mumbleclient PROPERTIES PREFIX "")
+endif()
 
 # MP3 support
 option(WITH_MPG123 "Add mp3 playback support" OFF)
