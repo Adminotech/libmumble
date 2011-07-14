@@ -346,6 +346,8 @@ bool MumbleClient::HandleMessageContent(std::istream& is, const MessageHeader& m
 void MumbleClient::ReadHandler(const boost::system::error_code& error) {
 	if (error) {
 		LOG(ERROR) << "read error: " << error.message();
+                if(error_callback_)
+                    error_callback_(error);
 		return;
 	}
 

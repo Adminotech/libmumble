@@ -8,6 +8,7 @@
 #include <boost/asio/ssl.hpp>
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/system/error_code.hpp>
 
 #include "libmumble_stdint.h"
 #include "messages.h"
@@ -36,6 +37,7 @@ typedef boost::function<void (const User& user)> UserLeftCallbackType;
 typedef boost::function<void (const User& user, const Channel& channel)> UserMovedCallbackType;
 typedef boost::function<void (const Channel& channel)> ChannelAddCallbackType;
 typedef boost::function<void (const Channel& channel)> ChannelRemoveCallbackType;
+typedef boost::function<void (const boost::system::error_code& error)> ErrorCallbackType;
 
 class DLL_PUBLIC MumbleClient {
 	enum State {
@@ -62,6 +64,7 @@ class DLL_PUBLIC MumbleClient {
 	void SetUserMovedCallback(UserMovedCallbackType umt) { user_moved_callback_ = umt; }
 	void SetChannelAddCallback(ChannelAddCallbackType cat) { channel_add_callback_ = cat; }
 	void SetChannelRemoveCallback(ChannelRemoveCallbackType crt) { channel_remove_callback_ = crt; }
+        void SetErrorCallback(ErrorCallbackType ec) { error_callback_ = ec; }
 
 #ifndef NDEBUG
 	void PrintChannelList();
@@ -110,6 +113,7 @@ class DLL_PUBLIC MumbleClient {
 	UserMovedCallbackType user_moved_callback_;
 	ChannelAddCallbackType channel_add_callback_;
 	ChannelRemoveCallbackType channel_remove_callback_;
+        ErrorCallbackType error_callback_;
 
 	DLL_LOCAL MumbleClient(const MumbleClient&);
 	DLL_LOCAL void operator=(const MumbleClient&);
