@@ -104,6 +104,7 @@ class DLL_PUBLIC MumbleClient {
 	int32_t session_;
 	std::list< boost::shared_ptr<User> > user_list_;
 	std::list< boost::shared_ptr<Channel> > channel_list_;
+        bool processing_tcp_queue_;
 
 	TextMessageCallbackType text_message_callback_;
 	AuthCallbackType auth_callback_;

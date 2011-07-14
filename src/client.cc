@@ -309,17 +309,22 @@ void MumbleClient::ProcessTCPSendQueue(const boost::system::error_code& error, c
 		send_queue_.pop_front();
 
 		if (send_queue_.empty())
-			return;
+                {
+                    processing_tcp_queue_ = false;
+                    return;
+                }
 
 		SendFirstQueued();
 	} else {
 		LOG(ERROR) << "Write error: " << error.message();
+                processing_tcp_queue_ = false;
                 if(error_callback_)
                     error_callback_(error);
 	}
 }
 
 void MumbleClient::SendFirstQueued() {
+        processing_tcp_queue_ = true;
 	boost::shared_ptr<Message>& msg = send_queue_.front();
 
 	std::vector<boost::asio::const_buffer> bufs;
@@ -503,7 +508,6 @@ void MumbleClient::SendMessage(PbMessageType::MessageType type, const ::google::
 		DLOG(INFO) << new_msg.DebugString();
 	}
 
-	bool write_in_progress = !send_queue_.empty();
 	int32_t length = new_msg.ByteSize();
 	MessageHeader msg_header;
 	msg_header.type(static_cast<int16_t>(type));
@@ -513,13 +517,12 @@ void MumbleClient::SendMessage(PbMessageType::MessageType type, const ::google::
 	boost::shared_ptr<Message> m = boost::make_shared<Message>(msg_header, pb_message);
 	send_queue_.push_back(m);
 
-	if (state_ >= kStateHandshakeCompleted && !write_in_progress) {
+        if (state_ >= kStateHandshakeCompleted && !processing_tcp_queue_) {
 		SendFirstQueued();
 	}
 }
 
 void MumbleClient::SendRawUdpTunnel(const char* buffer, int32_t len) {
-	bool write_in_progress = !send_queue_.empty();
 	MessageHeader msg_header;
 	msg_header.type(PbMessageType::UDPTunnel);
 	msg_header.length(len);
@@ -528,7 +531,7 @@ void MumbleClient::SendRawUdpTunnel(const char* buffer, int32_t len) {
 	boost::shared_ptr<Message> m = boost::make_shared<Message>(msg_header, data);
 	send_queue_.push_back(m);
 
-	if (state_ >= kStateHandshakeCompleted && !write_in_progress) {
+        if (state_ >= kStateHandshakeCompleted && !processing_tcp_queue_) {
 		SendFirstQueued();
 	}
 }
