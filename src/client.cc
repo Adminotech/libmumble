@@ -78,6 +78,8 @@ MumbleClient::MumbleClient(boost::asio::io_service* io_service) :
 void MumbleClient::DoPing(const boost::system::error_code& error) {
 	if (error) {
 		LOG(ERROR) << "ping error: " << error.message();
+                if(error_callback_)
+                    error_callback_(error);
 		return;
 	}
 
@@ -312,6 +314,8 @@ void MumbleClient::ProcessTCPSendQueue(const boost::system::error_code& error, c
 		SendFirstQueued();
 	} else {
 		LOG(ERROR) << "Write error: " << error.message();
+                if(error_callback_)
+                    error_callback_(error);
 	}
 }
 
@@ -372,6 +376,8 @@ void MumbleClient::ReadHandler(const boost::system::error_code& error) {
 void MumbleClient::ReadHandlerContinue(const MessageHeader msg_header, const boost::system::error_code& error) {
 	if (error) {
 		LOG(ERROR) << "read error: " << error.message();
+                if(error_callback_)
+                    error_callback_(error);
 		return;
 	}
 
@@ -422,6 +428,8 @@ void MumbleClient::Connect(const Settings& s) {
 	}
 	if (error) {
 		LOG(ERROR) << "connection error: " << error.message();
+                if(error_callback_)
+                    error_callback_(error);
 		return;
 	}
 
@@ -434,6 +442,8 @@ void MumbleClient::Connect(const Settings& s) {
 	tcp_socket_->handshake(boost::asio::ssl::stream_base::client, error);
 	if (error) {
 		LOG(ERROR) << "handshake error: " << error.message();
+                if(error_callback_)
+                    error_callback_(error);
 		return;
 	}
 #endif
