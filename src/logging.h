@@ -32,29 +32,29 @@ const LogSeverity LOG_NUM_SEVERITIES = 4;
 #endif
 
 class LogMessage {
-  public:
-	LogMessage(const char* file, int32_t line);
-	LogMessage(const char* file, int32_t line, LogSeverity severity);
+public:
+    LogMessage(const char* file, int32_t line);
+    LogMessage(const char* file, int32_t line, LogSeverity severity);
 
-	~LogMessage();
+    ~LogMessage();
 
-	std::ostream& stream() { return stream_; }
+    std::ostream& stream() { return stream_; }
 
-  private:
-	void Init(const char* file, int32_t line);
+private:
+    void Init(const char* file, int32_t line);
 
-	LogSeverity severity_;
-	std::ostringstream stream_;
-	std::streamoff message_start_;
+    LogSeverity severity_;
+    std::ostringstream stream_;
+    std::streamoff message_start_;
 
-	LogMessage(const LogMessage&);
-	void operator=(const LogMessage&);
+    LogMessage(const LogMessage&);
+    void operator=(const LogMessage&);
 };
 
 class LogMessageVoidify {
-  public:
-	LogMessageVoidify() { }
-	void operator&(std::ostream&) { }
+public:
+    LogMessageVoidify() { }
+    void operator&(std::ostream&) { }
 };
 
 }  // namespace logging
