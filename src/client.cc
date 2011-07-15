@@ -72,6 +72,7 @@ MumbleClient::MumbleClient(boost::asio::io_service* io_service) :
 	io_service_(io_service),
 	cs_(new CryptState()),
 	state_(kStateNew),
+        processing_tcp_queue_(false),
 	ping_timer_(NULL) {
 }
 
