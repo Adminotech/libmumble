@@ -14,19 +14,19 @@
 #define CELT_MAJOR_VERSION 0
 
 /* Version micro */
-#define CELT_MICRO_VERSION 1
+#define CELT_MICRO_VERSION 0
 
 /* Version minor */
-#define CELT_MINOR_VERSION 7
+#define CELT_MINOR_VERSION 11
 
 /* Complete version string */
-#define CELT_VERSION "0.7.1"
-
-/* Compile as fixed-point */
-/* #undef DOUBLE_PRECISION */
+#define CELT_VERSION "0.11.0"
 
 /* Assertions */
 /* #undef ENABLE_ASSERTIONS */
+
+/* Postfilter */
+/* #undef ENABLE_POSTFILTER */
 
 /* Debug fixed-point implementation */
 /* #undef FIXED_DEBUG */
@@ -53,7 +53,7 @@
 #define HAVE_GETOPT_LONG 1
 
 /* Define to 1 if you have the <inttypes.h> header file. */
-//#define HAVE_INTTYPES_H 1
+// #define HAVE_INTTYPES_H 1
 
 /* Define to 1 if you have the `m' library (-lm). */
 #define HAVE_LIBM 1
@@ -71,7 +71,7 @@
 #define HAVE_MEMORY_H 1
 
 /* Define to 1 if you have the <stdint.h> header file. */
-//#define HAVE_STDINT_H 1
+// #define HAVE_STDINT_H 1
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #define HAVE_STDLIB_H 1
@@ -101,12 +101,6 @@
    */
 #define LT_OBJDIR ".libs/"
 
-/* Compile as fixed-point */
-/* #undef MIXED_PRECISION */
-
-/* Use new PLC code */
-#define NEW_PLC /**/
-
 /* Define to the address where bug reports for this package should be sent. */
 #define PACKAGE_BUGREPORT ""
 
@@ -118,9 +112,6 @@
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME ""
-
-/* Define to the home page for this package. */
-#define PACKAGE_URL ""
 
 /* Define to the version of this package. */
 #define PACKAGE_VERSION ""
@@ -137,14 +128,15 @@
 /* The size of `short', as computed by sizeof. */
 #define SIZEOF_SHORT 2
 
-/* Static modes */
-/* #undef STATIC_MODES */
+/* Custom modes */
+/* #undef CUSTOM_MODES */
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Make use of alloca */
 /* #undef USE_ALLOCA */
+#define USE_ALLOCA 1
 
 /* Use C99 variable-size arrays */
 // #define VAR_ARRAYS /**/
@@ -167,7 +159,7 @@
 /* Define to `__inline__' or `__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */
 #ifndef __cplusplus
-#define inline
+#define inline __inline
 #endif
 
 /* Define to the equivalent of the C99 'restrict' keyword, or to
