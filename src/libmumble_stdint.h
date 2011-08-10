@@ -1,5 +1,5 @@
-#ifndef _LIBMUMBLE_STDINT_H
-#define _LIBMUMBLE_STDINT_H
+#ifndef _LIBMUMBLECLIENT_STDINT_H_
+#define _LIBMUMBLECLIENT_STDINT_H_
 
 // Use system int if available, if not use boost
 #if (__STDC_VERSION__ >= 199901L) || (_MSC_VER >= 1600)

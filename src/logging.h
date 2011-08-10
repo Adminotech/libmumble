@@ -1,15 +1,16 @@
-#ifndef LOGGING_H_
-#define LOGGING_H_
+#ifndef _LIBMUMBLECLIENT_LOGGING_H_
+#define _LIBMUMBLECLIENT_LOGGING_H_
 
 #include "libmumble_stdint.h"
+#include "visibility.h"
 #include <sstream>
 
 namespace MumbleClient {
 
 namespace logging {
 
-void SetLogLevel(int32_t level);
-int32_t GetLogLevel();
+void DLL_PUBLIC SetLogLevel(int32_t level);
+int32_t DLL_PUBLIC GetLogLevel();
 
 typedef int32_t LogSeverity;
 const LogSeverity LOG_INFO = 0;
@@ -31,7 +32,7 @@ const LogSeverity LOG_NUM_SEVERITIES = 4;
 #define DLOG(severity) true ? 0 : ::MumbleClient::logging::LogMessageVoidify() & LOG(severity)
 #endif
 
-class LogMessage {
+class DLL_PUBLIC LogMessage {
 public:
     LogMessage(const char* file, int32_t line);
     LogMessage(const char* file, int32_t line, LogSeverity severity);

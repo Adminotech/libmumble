@@ -1,8 +1,7 @@
-#ifndef USER_H_
-#define USER_H_
+#ifndef _LIBMUMBLECLIENT_USER_H_
+#define _LIBMUMBLECLIENT_USER_H_
 
 #include <boost/weak_ptr.hpp>
-
 #include "logging.h"
 
 namespace MumbleClient {

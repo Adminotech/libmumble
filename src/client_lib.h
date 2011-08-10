@@ -1,5 +1,5 @@
-#ifndef CLIENT_LIB_H_
-#define CLIENT_LIB_H_
+#ifndef _LIBMUMBLECLIENT_CLIENT_LIB_H_
+#define _LIBMUMBLECLIENT_CLIENT_LIB_H_
 
 #include "visibility.h"
 #include "libmumble_stdint.h"

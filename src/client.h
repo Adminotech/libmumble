@@ -1,5 +1,5 @@
-#ifndef CLIENT_H_
-#define CLIENT_H_
+#ifndef _LIBMUMBLECLIENT_CLIENT_H_
+#define _LIBMUMBLECLIENT_CLIENT_H_
 
 #include <list>
 #include <deque>

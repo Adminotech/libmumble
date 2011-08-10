@@ -1,5 +1,7 @@
-#ifndef SETTINGS_H_
-#define SETTINGS_H_
+#ifndef _LIBMUMBLECLIENT_SETTINGS_H_
+#define _LIBMUMBLECLIENT_SETTINGS_H_
+
+#include "visibility.h"
 
 namespace MumbleClient {
 

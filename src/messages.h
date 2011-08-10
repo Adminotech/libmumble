@@ -1,5 +1,5 @@
-#ifndef MESSAGES_H_
-#define MESSAGES_H_
+#ifndef _LIBMUMBLECLIENT_MESSAGES_H_
+#define _LIBMUMBLECLIENT_MESSAGES_H_
 
 namespace MumbleClient {
 

@@ -1,8 +1,7 @@
-#ifndef CHANNEL_H_
-#define CHANNEL_H_
+#ifndef _LIBMUMBLECLIENT_CHANNEL_H_
+#define _LIBMUMBLECLIENT_CHANNEL_H_
 
 #include <boost/weak_ptr.hpp>
-
 #include "logging.h"
 
 namespace MumbleClient {

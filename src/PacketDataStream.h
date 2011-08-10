@@ -28,23 +28,22 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef _PACKETDATASTREAM_H
-#define _PACKETDATASTREAM_H
+#ifndef _LIBMUMBLECLIENT_PACKETDATASTREAM_H
+#define _LIBMUMBLECLIENT_PACKETDATASTREAM_H
 
 #include <string.h>
-
 #include <deque>
 #include <vector>
 
 namespace MumbleClient {
 
 /*
-* GCC doesn't yet do inter-object-file inlining, so unfortunately, this all has to be defined here.
-*/
+ * GCC doesn't yet do inter-object-file inlining, so unfortunately, this all has to be defined here.
+ */
 
 class PacketDataStream {
 private:
-    //		Q_DISABLE_COPY(PacketDataStream)
+    //Q_DISABLE_COPY(PacketDataStream)
 private:
     unsigned char *data;
     uint32_t maxsize;
