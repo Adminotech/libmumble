@@ -13,7 +13,9 @@
 #else
 #include <unistd.h>
 #endif
-
+#if defined (__APPLE__)
+#include <mach/mach_init.h>
+#endif
 
 #include <ctime>
 #include <iomanip>
