@@ -6,30 +6,33 @@
 
 #include <boost/asio.hpp>
 
-namespace MumbleClient {
+namespace MumbleClient 
+{
+    class MumbleClient;
 
-class MumbleClient;
+    class DLL_PUBLIC MumbleClientLib 
+    {
+    public:
+        static MumbleClientLib* instance();
 
-class DLL_PUBLIC MumbleClientLib {
-public:
-    static MumbleClientLib* instance();
-    MumbleClient* NewClient();
-    void Run();
-    void Shutdown();
-    static int32_t GetLogLevel();
-    static void SetLogLevel(int32_t level);
+        MumbleClient* NewClient();
+        
+        void Run();
+        void Shutdown();
 
-private:
-    DLL_LOCAL MumbleClientLib();
-    DLL_LOCAL ~MumbleClientLib();
+        static int32_t GetLogLevel();
+        static void SetLogLevel(int32_t level);
 
-    DLL_LOCAL static MumbleClientLib* instance_;
-    boost::asio::io_service io_service_;
+    private:
+        DLL_LOCAL MumbleClientLib();
+        DLL_LOCAL ~MumbleClientLib();
 
-    MumbleClientLib(const MumbleClientLib&);
-    void operator=(const MumbleClientLib&);
-};
+        DLL_LOCAL static MumbleClientLib* instance_;
+        boost::asio::io_service io_service_;
 
-}  // namespace MumbleClient
+        MumbleClientLib(const MumbleClientLib&);
+        void operator=(const MumbleClientLib&);
+    };
+}
 
-#endif  // CLIENT_LIB_H_
+#endif

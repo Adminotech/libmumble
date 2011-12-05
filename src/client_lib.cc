@@ -6,56 +6,50 @@
 #include "logging.h"
 #include "settings.h"
 
-namespace MumbleClient {
+namespace MumbleClient 
+{
+    MumbleClientLib* MumbleClientLib::instance_ = 0;
 
-///////////////////////////////////////////////////////////////////////////////
+    MumbleClientLib::MumbleClientLib() 
+    {
+    }
 
-// static
-MumbleClientLib* MumbleClientLib::instance_ = NULL;
+    MumbleClientLib::~MumbleClientLib() 
+    {
+        delete instance_;
+    }
 
-///////////////////////////////////////////////////////////////////////////////
-// MumbleClientLib, private:
-
-MumbleClientLib::MumbleClientLib() {
-}
-
-MumbleClientLib::~MumbleClientLib() {
-    delete instance_;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// MumbleClientLib, public:
-
-MumbleClientLib* MumbleClientLib::instance() {
-    if (instance_ == NULL) {
-        instance_ = new MumbleClientLib();
+    MumbleClientLib* MumbleClientLib::instance() 
+    {
+        if (!instance_)
+            instance_ = new MumbleClientLib();
         return instance_;
     }
 
-    return instance_;
-}
+    MumbleClient* MumbleClientLib::NewClient() 
+    {
+        return new MumbleClient(&io_service_);
+    }
 
-MumbleClient* MumbleClientLib::NewClient() {
-    return new MumbleClient(&io_service_);
-}
+    void MumbleClientLib::Run() 
+    {
+        io_service_.reset();
+        io_service_.run();
+    }
 
-void MumbleClientLib::Run() {
-    io_service_.reset();
-    io_service_.run();
-}
+    void MumbleClientLib::Shutdown() 
+    {
+        ::google::protobuf::ShutdownProtobufLibrary();
+    }
 
-void MumbleClientLib::Shutdown() {
-    ::google::protobuf::ShutdownProtobufLibrary();
-}
+    int32_t MumbleClientLib::GetLogLevel() 
+    {
+        return logging::GetLogLevel();
+    }
 
-// static
-int32_t MumbleClientLib::GetLogLevel() {
-    return logging::GetLogLevel();
-}
+    void MumbleClientLib::SetLogLevel(int32_t level) 
+    {
+        logging::SetLogLevel(level);
+    }
 
-// static
-void MumbleClientLib::SetLogLevel(int32_t level) {
-    logging::SetLogLevel(level);
 }
-
-}  // namespace MumbleClient
