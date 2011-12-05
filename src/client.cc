@@ -3,6 +3,7 @@
 #include <boost/make_shared.hpp>
 #include <deque>
 #include <typeinfo>
+#include <iostream>
 
 #include "channel.h"
 #include "CryptState.h"
@@ -82,35 +83,83 @@ namespace MumbleClient
         cs_(new CryptState()),
         state_(kStateNew),
         processing_tcp_queue_(false),
+        resolving_(false),
         ping_timer_(0),
         tcp_socket_(0),
-        udp_socket_(0)
+        udp_socket_(0),
+        resolver_(0)
     {
         currentSettings_ = Settings();
+        resolver_ = new boost::asio::ip::tcp::resolver(*io_service_);
     }
 
     MumbleClient::~MumbleClient() 
     {
-        if (ping_timer_)
-            SAFE_DELETE(ping_timer_);
-        if (tcp_socket_)
-            SAFE_DELETE(tcp_socket_);
-        if (udp_socket_)
-            SAFE_DELETE(udp_socket_);
-        if (cs_)
-            SAFE_DELETE(cs_);
+        if (state_ != kStateDisconnected)
+            Disconnect();
+
+        try
+        {
+            if (ping_timer_)
+            {
+                //LOG(INFO) << "-- Deleting ping timer";
+                SAFE_DELETE(ping_timer_);
+            }
+            if (tcp_socket_)
+            {
+                //LOG(INFO) << "-- Deleting TCP socket";
+                SAFE_DELETE(tcp_socket_);
+            }
+            if (udp_socket_)
+            {
+                //LOG(INFO) << "-- Deleting UDP socket";
+                SAFE_DELETE(udp_socket_);
+            }
+            if (resolver_)
+            {
+                //LOG(INFO) << "-- Deleting host resolver";
+                SAFE_DELETE(resolver_);
+            }
+            if (cs_)
+            {
+                //LOG(INFO) << "-- Deleting crypt state";
+                SAFE_DELETE(cs_);
+            }
+        }
+        catch(std::exception &e)
+        {
+            std::cout << "Error in ~MumbleClient(): " << e.what() << std::endl;
+        }
     }
 
     void MumbleClient::Connect(const Settings& s) 
     {
-        // Resolve hostname
+        if (!resolver_)
+        {
+            LOG(ERROR) << "libmumble: My host resolver is null, cannot proceed!";
+            return;
+        }
+        if (resolving_)
+        {
+            LOG(INFO) << "Already connecting, please wait...";
+            return;
+        }
+
+        // Resolve host
         LOG(INFO) << "libmumble: Resolving host " << s.GetHost() << ":" << s.GetPort();
 
+        state_ = kStateNew;
         currentSettings_ = Settings(s.GetHost(), s.GetPort(), s.GetUserName(), s.GetPassword());
 
-        boost::asio::ip::tcp::resolver resolver(*io_service_);
+        // Note: 'io_service_' needs to be running so it will process the queued async_resolve() call!
+        resolving_ = true;
         boost::asio::ip::tcp::resolver::query query(currentSettings_.GetHost(), currentSettings_.GetPort());
-        boost::asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+        resolver_->async_resolve(query, boost::bind(&MumbleClient::OnConnected, this, boost::asio::placeholders::error, boost::asio::placeholders::iterator));
+    }
+
+    void MumbleClient::OnConnected(const boost::system::error_code& resolveError, boost::asio::ip::tcp::resolver::iterator endpoint_iterator)
+    {
+        resolving_ = false;
         boost::asio::ip::tcp::resolver::iterator end;
 
         // Prepare connection
@@ -208,43 +257,61 @@ namespace MumbleClient
 
     void MumbleClient::Disconnect() 
     {
-        if (ping_timer_)
-            ping_timer_->cancel();
+        state_ = kStateDisconnected;
 
+        std::cout << "libmumble: Disconnecting" << std::endl;
+
+        if (ping_timer_)
+        {    
+            std::cout << "-- Canceling ping" << std::endl;
+            try { ping_timer_->cancel(); }
+            catch(boost::system::system_error &error) { std::cout << "   Error: ping_timer_->cancel() : " << error.what() << std::endl; }
+            // Don't wait on the last ping, lets assume killing the timer is ok
+            // even if a pending async ping is coming to SendPing().
+            // The wait would block 0-5000 msec depending how far its ticking atm.
+            //std::cout << "-- Waiting last ping" << std::endl;
+            //try { ping_timer_->wait(); }
+            //catch(boost::system::system_error &error) { std::cout << "   Error: ping_timer_->wait()   : " << error.what() << std::endl; }
+            SAFE_DELETE(ping_timer_);
+        }
+
+        std::cout << "-- Clearing user/channel lists" << std::endl;
         send_queue_.clear();
         user_list_.clear();
         channel_list_.clear();
 
-        if (tcp_socket_)
-        {
-            tcp_socket_->lowest_layer().cancel();
-            tcp_socket_->lowest_layer().close();
-            SAFE_DELETE(tcp_socket_);
-        }
-
         if (udp_socket_)
         {
-            udp_socket_->close();
+            std::cout << "-- Closing UDP socket" << std::endl;
+            try { udp_socket_->cancel(); }
+            catch(boost::system::system_error &error) { std::cout << "   Error: udp_socket_->cancel() : " << error.what() << std::endl; }
+            try { udp_socket_->close(); }
+            catch(boost::system::system_error &error) { std::cout << "   Error: udp_socket_->close()  : " << error.what() << std::endl; }
             SAFE_DELETE(udp_socket_);
         }
 
-        state_ = kStateNew;
+        if (tcp_socket_)
+        {
+            std::cout << "-- Closing TCP socket" << std::endl;
+            try { tcp_socket_->lowest_layer().cancel(); }
+            catch(boost::system::system_error &error) { std::cout << "   Error: tcp_socket_->cancel() : " << error.what() << std::endl; }
+            try { tcp_socket_->lowest_layer().close(); }
+            catch(boost::system::system_error &error) { std::cout << "   Error: tcp_socket_->close()  : " << error.what() << std::endl; }
+            SAFE_DELETE(tcp_socket_);
+        }
     }
 
-    void MumbleClient::DoPing(const boost::system::error_code& error) 
+    void MumbleClient::SendPing(const boost::system::error_code& error) 
     {
-        if (state_ == kStateNew)
-        {
-            LOG(ERROR) << "libmumble: Trying to start ping in non-authenticated state!";
+        if (state_ == kStateDisconnected)
             return;
-        }
 
         if (error) 
         {
             if (error_callback_)
                 error_callback_(error);
             else
-                LOG(ERROR) << "libmumble::DoPing: " << error.message();
+                LOG(ERROR) << "libmumble::SendPing: " << error.message();
             return;
         }
 
@@ -257,51 +324,60 @@ namespace MumbleClient
             ping_timer_ = new boost::asio::deadline_timer(*io_service_);
 
         ping_timer_->expires_from_now(boost::posix_time::seconds(5));
-        ping_timer_->async_wait(boost::bind(&MumbleClient::DoPing, this, boost::asio::placeholders::error));
+        ping_timer_->async_wait(boost::bind(&MumbleClient::SendPing, this, boost::asio::placeholders::error));
     }
 
     void MumbleClient::ParseMessage(const MessageHeader& msg_header, void* buffer) 
     {
-        switch (msg_header.type()) {
-        case PbMessageType::Version: {
+        switch (msg_header.type()) 
+        {
+        case PbMessageType::Version: 
+        {
             MumbleProto::Version v = ConstructProtobufObject<MumbleProto::Version>(buffer, msg_header.length(), true);
             // NOT_IMPLEMENTED
             LOG(INFO) << "libmumble: PbMessageType::Version handling not implemented!";
             break;
         }
-        case PbMessageType::Ping: {
+        case PbMessageType::Ping:
+        {
             MumbleProto::Ping p = ConstructProtobufObject<MumbleProto::Ping>(buffer, msg_header.length(), false);
             // NOT_IMPLEMENTED
             //LOG(INFO) << "PbMessageType::Ping handling not implemented!";
             break;
         }
-        case PbMessageType::ChannelRemove: {
+        case PbMessageType::ChannelRemove: 
+        {
             MumbleProto::ChannelRemove cr = ConstructProtobufObject<MumbleProto::ChannelRemove>(buffer, msg_header.length(), true);
             HandleChannelRemove(cr);
             break;
         }
-        case PbMessageType::ChannelState: {
+        case PbMessageType::ChannelState: 
+        {
             MumbleProto::ChannelState cs = ConstructProtobufObject<MumbleProto::ChannelState>(buffer, msg_header.length(), true);
             HandleChannelState(cs);
             break;
         }
-        case PbMessageType::UserRemove: {
+        case PbMessageType::UserRemove: 
+        {
             MumbleProto::UserRemove ur = ConstructProtobufObject<MumbleProto::UserRemove>(buffer, msg_header.length(), true);
             HandleUserRemove(ur);
             break;
         }
-        case PbMessageType::UserState: {
+        case PbMessageType::UserState: 
+        {
             MumbleProto::UserState us = ConstructProtobufObject<MumbleProto::UserState>(buffer, msg_header.length(), true);
             HandleUserState(us);
             break;
         }
-        case PbMessageType::TextMessage: {
+        case PbMessageType::TextMessage: 
+        {
             MumbleProto::TextMessage tm = ConstructProtobufObject<MumbleProto::TextMessage>(buffer, msg_header.length(), true);
             if (text_message_callback_)
                 text_message_callback_(tm.message());
             break;
         }
-        case PbMessageType::CryptSetup: {
+        case PbMessageType::CryptSetup: 
+        {
             MumbleProto::CryptSetup cs = ConstructProtobufObject<MumbleProto::CryptSetup>(buffer, msg_header.length(), true);
             if (cs.has_key() && cs.has_client_nonce() && cs.has_server_nonce()) {
                 cs_->setKey(reinterpret_cast<const unsigned char *>(cs.key().data()), reinterpret_cast<const unsigned char *>(cs.client_nonce().data()), reinterpret_cast<const unsigned char *>(cs.server_nonce().data()));
@@ -315,25 +391,28 @@ namespace MumbleClient
             }
             break;
         }
-        case PbMessageType::CodecVersion: {
+        case PbMessageType::CodecVersion: 
+        {
             MumbleProto::CodecVersion cv = ConstructProtobufObject<MumbleProto::CodecVersion>(buffer, msg_header.length(), true);
             // NOT_IMPLEMENTED
             LOG(INFO) << "PbMessageType::CodecVersion handling not implemented!";
             break;
         }
-        case PbMessageType::ServerSync: {
+        case PbMessageType::ServerSync: 
+        {
             MumbleProto::ServerSync ss = ConstructProtobufObject<MumbleProto::ServerSync>(buffer, msg_header.length(), true);
             state_ = kStateAuthenticated;
             session_ = ss.session();
 
             // Enqueue ping
-            DoPing(boost::system::error_code());
+            SendPing(boost::system::error_code());
 
             if (auth_callback_)
                 auth_callback_();
             break;
         }
-        case PbMessageType::UDPTunnel: {
+        case PbMessageType::UDPTunnel: 
+        {
             if (raw_udp_tunnel_callback_)
                 raw_udp_tunnel_callback_(msg_header.length(), buffer);
             break;
@@ -472,10 +551,14 @@ namespace MumbleClient
     #endif
 
 
-    void MumbleClient::ProcessTCPSendQueue(const boost::system::error_code& error, const size_t /*bytes_transferred*/) {
-        if (!error) {
-            send_queue_.pop_front();
+    void MumbleClient::ProcessTCPSendQueue(const boost::system::error_code& error, const size_t /*bytes_transferred*/) 
+    {
+        if (state_ == kStateDisconnected)
+            return;
 
+        if (!error) 
+        {
+            send_queue_.pop_front();
             if (send_queue_.empty())
             {
                 processing_tcp_queue_ = false;
@@ -483,15 +566,19 @@ namespace MumbleClient
             }
 
             SendFirstQueued();
-        } else {
-            LOG(ERROR) << "Write error: " << error.message();
+        } 
+        else 
+        {
             processing_tcp_queue_ = false;
-            if(error_callback_)
+            if (error_callback_)
                 error_callback_(error);
+            else
+                LOG(ERROR) << "Write error: " << error.message();
         }
     }
 
-    void MumbleClient::SendFirstQueued() {
+    void MumbleClient::SendFirstQueued() 
+    {
         processing_tcp_queue_ = true;
         boost::shared_ptr<Message>& msg = send_queue_.front();
 
@@ -520,11 +607,17 @@ namespace MumbleClient
         return true;
     }
 
-    void MumbleClient::ReadHandler(const boost::system::error_code& error) {
-        if (error) {
-            LOG(ERROR) << "read error: " << error.message();
-            if(error_callback_)
+    void MumbleClient::ReadHandler(const boost::system::error_code& error) 
+    {
+        if (state_ == kStateDisconnected)
+            return;
+
+        if (error) 
+        {
+            if (error_callback_)
                 error_callback_(error);
+            else
+                LOG(ERROR) << "read error: " << error.message();
             return;
         }
 
@@ -546,11 +639,17 @@ namespace MumbleClient
             async_read(*tcp_socket_, recv_buffer_, boost::asio::transfer_at_least(6), boost::bind(&MumbleClient::ReadHandler, this, boost::asio::placeholders::error));
     }
 
-    void MumbleClient::ReadHandlerContinue(const MessageHeader msg_header, const boost::system::error_code& error) {
-        if (error) {
-            LOG(ERROR) << "read error: " << error.message();
-            if(error_callback_)
+    void MumbleClient::ReadHandlerContinue(const MessageHeader msg_header, const boost::system::error_code& error) 
+    {
+        if (state_ == kStateDisconnected)
+            return;
+
+        if (error) 
+        {    
+            if (error_callback_)
                 error_callback_(error);
+            else
+                LOG(ERROR) << "read error: " << error.message();
             return;
         }
 

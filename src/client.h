@@ -48,7 +48,8 @@ class DLL_PUBLIC MumbleClient
     {
         kStateNew,
         kStateHandshakeCompleted,
-        kStateAuthenticated
+        kStateAuthenticated,
+        kStateDisconnected
     };
 
 public:
@@ -61,6 +62,8 @@ public:
     void SendRawUdpTunnel(const char* buffer, int32_t len);
     void SendUdpMessage(const char* buffer, int32_t len);
     void JoinChannel(int32_t channel_id);
+
+    
 
     // Get current connection settings
     Settings CurrentSettings() { return currentSettings_; }
@@ -91,7 +94,9 @@ private:
     DLL_LOCAL MumbleClient(const MumbleClient&);
     DLL_LOCAL void operator=(const MumbleClient&);
 
-    DLL_LOCAL void DoPing(const boost::system::error_code& error);
+    DLL_LOCAL void OnConnected(const boost::system::error_code& resolveError, boost::asio::ip::tcp::resolver::iterator endpoint_iterator);
+
+    DLL_LOCAL void SendPing(const boost::system::error_code& error);
     DLL_LOCAL void ParseMessage(const MessageHeader& msg_header, void* buffer);
     DLL_LOCAL void ProcessTCPSendQueue(const boost::system::error_code& error, const size_t bytes_transferred);
     DLL_LOCAL void SendFirstQueued();
@@ -112,8 +117,10 @@ private:
     
     int32_t session_;
     bool processing_tcp_queue_;
+    bool resolving_;
 
     // Boost
+    boost::asio::ip::tcp::resolver *resolver_;
     boost::asio::io_service* io_service_;
 #if SSL
     boost::asio::ssl::stream<boost::asio::ip::tcp::socket>* tcp_socket_;

@@ -6,6 +6,8 @@
 #include "logging.h"
 #include "settings.h"
 
+#include <boost/system/system_error.hpp>
+
 namespace MumbleClient 
 {
     MumbleClientLib* MumbleClientLib::instance_ = 0;
@@ -33,12 +35,22 @@ namespace MumbleClient
 
     void MumbleClientLib::Run() 
     {
-        io_service_.reset();
-        io_service_.run();
+        try
+        {
+            //LOG(INFO) << "MumbleClientLib::Run() - Networking started";
+            io_service_.reset();
+            io_service_.run();
+            //LOG(INFO) << "MumbleClientLib::Run() - Networking stopped";
+        }
+        catch (boost::system::system_error &error)
+        {
+            std::cout << "MumbleClientLib::Run(): Exception occurred: " << error.what() << std::endl;
+        }
     }
 
     void MumbleClientLib::Shutdown() 
     {
+        //LOG(INFO) << "MumbleClientLib::Shutdown() - Shutting down protobuf library";
         ::google::protobuf::ShutdownProtobufLibrary();
     }
 
